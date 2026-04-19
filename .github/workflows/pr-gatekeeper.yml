@@ -1,0 +1,35 @@
+name: PR Gatekeeper - API Tests
+
+# This pipeline triggers ONLY when a Pull Request is opened or updated against the 'main' branch
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  run-api-tests:
+    name: Run Rest Assured Suite
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+          cache: maven # Caches dependencies so subsequent runs are much faster
+
+      - name: Execute Maven Tests
+        run: mvn clean test
+
+      # Optional: Upload the Allure results folder so you can download and debug if a PR fails
+      - name: Upload Allure Results
+        if: always() # Ensures this runs even if the tests fail
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: target/allure-results/
+          retention-days: 7
